@@ -13,7 +13,13 @@ I hope not. Otherwise, why bother, am I right? :sweat_smile: I'll most probably 
 This time again, I will be using `tkinter`, with some other libraries and packages like `random` or any other thing I think might be needed.
 
 ##
+### What's done till now, Goose?
+Well, as of now, nothing significant is done yet. All I have on me is the grid designed and an empty click function. 
 
+### What's coming soon?
+Hopefully, the window with all the buttons.
+
+##
 This project is currently being updated. Until next time.
 
 Honk
