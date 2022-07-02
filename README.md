@@ -27,11 +27,11 @@ A good recap of what's been done. Coming right up:
 - Mine allocation based on first click.
 - Click response command.
 - Flag system to lock buttons with potential mines underneath.
+- A second click system, which allows the player to clear mines more easily.
 - Victory/Defeat announcement system.
 
 ### What's coming soon?
 Now that so much has been done, these are some things which you can expect to see:
-- A second click system, which allows the player to clear mines more easily.
 - Different difficulties.
 - Different themes: Some Dark and Some Light 
 - Stopwatch to note how long you take to finish.
