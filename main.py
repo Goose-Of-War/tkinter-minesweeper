@@ -25,6 +25,7 @@ def generate_mines(coord: tuple):
 	GAME_STATE = 'STARTED'
 
 def flag_switch():
+	'''Used to switch the state of the flag button and flag state.'''
 	global FLAG_BUTTON, FLAG_STATE
 	#Switch Flag State
 	FLAG_STATE = not FLAG_STATE
@@ -36,7 +37,6 @@ def count_neighbours(coord: tuple, arg: str):
 	'''To count the neighbouring flagged/mine containing buttons.'''
 	# Simplified: Checks the 8 surrounding coords for the argument's tautology (boolean value).
 	return sum([GRID[(i,j)][arg] for i in range(max(0, coord[0]-1), min(coord[0]+2, Difficulties[DIFFICULTY]['rows'])) for j in range(max(0, coord[1]-1), min(coord[1]+2, Difficulties[DIFFICULTY]['cols'])) if (i!=coord[0] or j!=coord[1])])
-
 
 def click(coord: tuple, forwarded: bool = False): 
 	'''Called on clicking a button. Depending on the button's attributes, different actions will happen.'''
@@ -97,23 +97,40 @@ def click(coord: tuple, forwarded: bool = False):
 		messagebox.showinfo(title="Congratulations.", message="You have cleared the minefield. You win.")
 		start_game()
 
+def settings():
+	'''For generating the settings page.'''
+	for slave in WINDOW.grid_slaves():
+		slave.grid_remove()
+	tk.Label(WINDOW, text='Settings', fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=0)
+	theme_canvas = tk.Canvas(WINDOW, width=200, height=40, bg=Themes[THEME]['bg']); theme_canvas.grid(row=1, column=0, pady=2)
+	tk.Label(theme_canvas, text='Themes', fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=0, columnspan=4)
+	i=1
+	for theme in Themes:
+		r = tk.Radiobutton(theme_canvas, text=theme, bg=Themes[theme]['bg'], fg=Themes[theme]['fg'], font=FONT); r.grid(row=i, column=0)
+		if theme==THEME: r.select()
+		i+=1
+	diff_canvas = tk.Canvas(WINDOW); diff_canvas.grid(row=2, column=0, pady=2)
+	tk.Label(diff_canvas, text='Difficulty', fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=0, columnspan=2)
+	tk.Button(WINDOW, text="Start Game", font=FONT, command=start_game).grid(row=3, column=0)
+
 def start_game():
 	'''Generates grid for buttons.'''
-	global GRID, GAME_STATE, WINDOW, FLAG_BUTTON, FLAG_STATE, FLAG_COUNTER, FLAGS_LABEL, RESET_BUTTON, NUM_LEFT
+	global GRID, GAME_STATE, WINDOW, FLAG_BUTTON, FLAG_STATE, FLAG_COUNTER, FLAGS_LABEL, NUM_LEFT
 	GRID.clear()
 	#Removing older objects.
-	for object in WINDOW.grid_slaves():
-		del object
+	for slave in WINDOW.grid_slaves():
+		slave.grid_remove()
 	#Setting the state of the game.
 	GAME_STATE = 'FIRST-CLICK'
 	FLAG_COUNTER = Difficulties[DIFFICULTY]['mines']
 	NUM_LEFT = Difficulties[DIFFICULTY]['rows'] * Difficulties[DIFFICULTY]['cols']
 	#Creating new objects.
 	WINDOW['bg'] = Themes[THEME]['bg']
-	tk.Label(WINDOW, text='Minesweeper', fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=1, columnspan=Difficulties[DIFFICULTY]['cols']-3)
+	tk.Label(WINDOW, text='Minesweeper', fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=2, columnspan=Difficulties[DIFFICULTY]['cols']-4)
 	FLAG_BUTTON = tk.Button(WINDOW, width=2, height=1, text='⚑', command=flag_switch, fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT); FLAG_BUTTON.grid(row=0, column=0)
-	FLAGS_LABEL = tk.Label(WINDOW, width=2, height=1, text=FLAG_COUNTER, fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT); FLAGS_LABEL.grid(row=0, column=Difficulties[DIFFICULTY]['cols']-2)
-	RESET_BUTTON = tk.Button(WINDOW, width=2, height=1, text='↻', command=start_game, fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT); RESET_BUTTON.grid(row=0, column=Difficulties[DIFFICULTY]['cols']-1)
+	FLAGS_LABEL = tk.Label(WINDOW, width=2, height=1, text=FLAG_COUNTER, fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT); FLAGS_LABEL.grid(row=0, column=1)
+	tk.Button(WINDOW, width=2, height=1, text='S', command=settings, fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=Difficulties[DIFFICULTY]['cols']-2)
+	tk.Button(WINDOW, width=2, height=1, text='↻', command=start_game, fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=Difficulties[DIFFICULTY]['cols']-1)
 	for i in range(Difficulties[DIFFICULTY]['rows']):
 		for j in range(Difficulties[DIFFICULTY]['cols']):
 			GRID[(i,j)] = {'opened': False, 'mine': False, 'neighbour': 0, 'flagged': False, 'secondclick': False, 'button': eval('tk.Button(WINDOW, width=2, height=1, command=lambda: click(({},{})), text="", fg=Themes[THEME]["fg"], font=FONT, bg=Themes[THEME]["bg"])'.format(i,j))}	#Replacing this with an exec command, and then adding the button to this dict.
@@ -127,7 +144,6 @@ WINDOW = tk.Tk()			#Tkinter Window Object. Where everything front-end will be th
 WINDOW.title("Minesweeper")	#Setting the title.
 FLAGS_LABEL = None			#Tkinter Label Object: Will have 'Minesweeper' written on it.
 FLAG_BUTTON = None			#Tkinter Button Object: Used to toggle flag option.
-RESET_BUTTON = None			#Tkinter Button Object: Used to restart the game if needed.
 NUM_LEFT = 0				#Represents the number of closed mines.
 FLAG_COUNTER = 0			#Represents the number of flags left to use. Negative means you are using more flags than needed.
 
