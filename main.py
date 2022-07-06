@@ -1,6 +1,18 @@
 import tkinter as tk
+from tkinter import ttk
 from random import randint as rand
 from tkinter import messagebox
+
+def color_change(theme: str):
+	'''Even tho originally used for changing theme color, it is also used to update difficulty.'''
+	global THEME, DIFFICULTY
+	DIFFICULTY = mode_variable.get()
+	THEME = theme
+	WINDOW['bg'] = Themes[THEME]['bg']
+	for slave in WINDOW.grid_slaves():
+		if type(slave) == tk.Label: slave.configure(**Themes[THEME],)
+		elif type(slave) == tk.Button:
+			if slave['text'] == "Save Changes": slave.configure(**Themes[THEME],)
 
 def generate_mines(coord: tuple):
 	'''Generates a grid object based on the first clicked co-ordinate.\n The coordinates in a (1,1) distance from them will not be given any mines.'''
@@ -40,7 +52,7 @@ def count_neighbours(coord: tuple, arg: str):
 
 def click(coord: tuple, forwarded: bool = False): 
 	'''Called on clicking a button. Depending on the button's attributes, different actions will happen.'''
-	global GAME_STATE, FLAG_COUNTER, FLAGS_LABEL, NUM_LEFT
+	global GAME_STATE, FLAG_COUNTER, FLAGS_LABEL, NUM_LEFT, FLAG_STATE
 	#Checking if first-time initialization is needed.
 	if GAME_STATE == 'VICTORY' or GAME_STATE == 'GAME_OVER':
 		return 
@@ -49,7 +61,15 @@ def click(coord: tuple, forwarded: bool = False):
 	#Checking if the location is to be flagged or clicked.
 	if FLAG_STATE:
 		#Flagging the location.
-		if GRID[coord]['opened']: pass
+		if GRID[coord]['opened']: 
+			if GRID[coord]['secondclick'] == False:
+				if count_neighbours(coord, 'flagged') == len(GRID[coord]['neighbour']): 
+					GRID[coord]['secondclick'] = True
+					FLAG_STATE = False
+					for I in range(max(0, coord[0]-1), min(coord[0]+2, Difficulties[DIFFICULTY]['rows'])):
+						for J in range(max(0, coord[1]-1), min(coord[1]+2, Difficulties[DIFFICULTY]['cols'])):
+							if I!=coord[0] or J!=coord[1]: click((I,J), True)
+					FLAG_STATE = True
 		else:
 			FLAG_COUNTER += 1 if GRID[coord]['flagged'] else -1
 			GRID[coord]['flagged'] = not GRID[coord]['flagged']
@@ -71,7 +91,7 @@ def click(coord: tuple, forwarded: bool = False):
 								GRID[(i,j)]['button']['text'] = 'X'
 								GRID[(i,j)]['button']['fg'], GRID[(i,j)]['button']['bg'] = GRID[(i,j)]['button']['bg'], GRID[(i,j)]['button']['fg']
 							else:
-								GRID[(i,j)]['button']['text'] = len(GRID[coord]['neighbour'])
+								GRID[(i,j)]['button']['text'] = len(GRID[(i,j)]['neighbour'])
 				if forwarded: 
 					return 
 			else:
@@ -79,7 +99,7 @@ def click(coord: tuple, forwarded: bool = False):
 			NUM_LEFT -= 1
 			if len(GRID[coord]['neighbour']) == 0:
 				click(coord)
-		elif GRID[coord]['opened'] == True and GRID[coord]['secondclick'] == False:
+		elif GRID[coord]['opened'] == True and GRID[coord]['secondclick'] == False and not forwarded:
 			if count_neighbours(coord, 'flagged') == len(GRID[coord]['neighbour']): 
 				GRID[coord]['secondclick'] = True
 				for I in range(max(0, coord[0]-1), min(coord[0]+2, Difficulties[DIFFICULTY]['rows'])):
@@ -99,38 +119,37 @@ def click(coord: tuple, forwarded: bool = False):
 
 def settings():
 	'''For generating the settings page.'''
+	global mode_variable
 	for slave in WINDOW.grid_slaves():
-		slave.grid_remove()
-	tk.Label(WINDOW, text='Settings', fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=0)
-	theme_canvas = tk.Canvas(WINDOW, width=200, height=40, bg=Themes[THEME]['bg']); theme_canvas.grid(row=1, column=0, pady=2)
-	tk.Label(theme_canvas, text='Themes', fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=0, columnspan=4)
-	i=1
+		slave.destroy()
+	tk.Label(WINDOW, text='Settings', font=FONT, **Themes[THEME],).grid(row=0,column=0,columnspan=5,pady=5, padx=5)
+	tk.Label(WINDOW,text='Mode',font=FONT, **Themes[THEME],).grid(row=1,column=0)
+	tk.Label(WINDOW,text='Colours',font=FONT, **Themes[THEME],).grid(row=2,column=0,padx=5)
+	mC=ttk.Combobox(WINDOW,textvariable=mode_variable,width=15,state='readonly', values=[*Difficulties]); mC.grid(row=1,column=1,columnspan=4, padx=5); mC.current([*Difficulties].index(DIFFICULTY))
 	for theme in Themes:
-		r = tk.Radiobutton(theme_canvas, text=theme, bg=Themes[theme]['bg'], fg=Themes[theme]['fg'], font=FONT); r.grid(row=i, column=0)
-		if theme==THEME: r.select()
-		i+=1
-	diff_canvas = tk.Canvas(WINDOW); diff_canvas.grid(row=2, column=0, pady=2)
-	tk.Label(diff_canvas, text='Difficulty', fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=0, columnspan=2)
-	tk.Button(WINDOW, text="Start Game", font=FONT, command=start_game).grid(row=3, column=0)
+		exec("tk.Button(WINDOW, width=2, height=1, text='⚑', font=FONT, command=lambda: color_change({0}), **Themes[{0}]).grid(row=2, column=1+[*Themes].index({0}))".format('"'+theme+'"'))
+	call=tk.Button(WINDOW, text="Save Changes", command=start_game, **Themes[THEME], font=FONT); call.grid(row=4,column=0,columnspan=len(Themes)+1);
 
 def start_game():
 	'''Generates grid for buttons.'''
-	global GRID, GAME_STATE, WINDOW, FLAG_BUTTON, FLAG_STATE, FLAG_COUNTER, FLAGS_LABEL, NUM_LEFT
+	global GRID, GAME_STATE, WINDOW, FLAG_BUTTON, FLAG_STATE, FLAG_COUNTER, FLAGS_LABEL, NUM_LEFT, DIFFICULTY
+	DIFFICULTY = mode_variable.get()
 	GRID.clear()
 	#Removing older objects.
 	for slave in WINDOW.grid_slaves():
 		slave.grid_remove()
 	#Setting the state of the game.
 	GAME_STATE = 'FIRST-CLICK'
+	FLAG_STATE = False
 	FLAG_COUNTER = Difficulties[DIFFICULTY]['mines']
 	NUM_LEFT = Difficulties[DIFFICULTY]['rows'] * Difficulties[DIFFICULTY]['cols']
 	#Creating new objects.
 	WINDOW['bg'] = Themes[THEME]['bg']
-	tk.Label(WINDOW, text='Minesweeper', fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=2, columnspan=Difficulties[DIFFICULTY]['cols']-4)
-	FLAG_BUTTON = tk.Button(WINDOW, width=2, height=1, text='⚑', command=flag_switch, fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT); FLAG_BUTTON.grid(row=0, column=0)
-	FLAGS_LABEL = tk.Label(WINDOW, width=2, height=1, text=FLAG_COUNTER, fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT); FLAGS_LABEL.grid(row=0, column=1)
-	tk.Button(WINDOW, width=2, height=1, text='S', command=settings, fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=Difficulties[DIFFICULTY]['cols']-2)
-	tk.Button(WINDOW, width=2, height=1, text='↻', command=start_game, fg=Themes[THEME]['fg'], bg=Themes[THEME]['bg'], font=FONT).grid(row=0, column=Difficulties[DIFFICULTY]['cols']-1)
+	tk.Label(WINDOW, text='Minesweeper',**Themes[THEME], font=FONT).grid(row=0, column=2, columnspan=Difficulties[DIFFICULTY]['cols']-4)
+	FLAG_BUTTON = tk.Button(WINDOW, width=2, height=1, text='⚑', command=flag_switch,**Themes[THEME], font=FONT); FLAG_BUTTON.grid(row=0, column=0)
+	FLAGS_LABEL = tk.Label(WINDOW, width=2, height=1, text=FLAG_COUNTER,**Themes[THEME], font=FONT); FLAGS_LABEL.grid(row=0, column=1)
+	tk.Button(WINDOW, width=2, height=1, text='S', command=settings,**Themes[THEME], font=FONT).grid(row=0, column=Difficulties[DIFFICULTY]['cols']-2)
+	tk.Button(WINDOW, width=2, height=1, text='↻', command=start_game,**Themes[THEME], font=FONT).grid(row=0, column=Difficulties[DIFFICULTY]['cols']-1)
 	for i in range(Difficulties[DIFFICULTY]['rows']):
 		for j in range(Difficulties[DIFFICULTY]['cols']):
 			GRID[(i,j)] = {'opened': False, 'mine': False, 'neighbour': 0, 'flagged': False, 'secondclick': False, 'button': eval('tk.Button(WINDOW, width=2, height=1, command=lambda: click(({},{})), text="", fg=Themes[THEME]["fg"], font=FONT, bg=Themes[THEME]["bg"])'.format(i,j))}	#Replacing this with an exec command, and then adding the button to this dict.
@@ -153,8 +172,8 @@ Themes = {
 	'Dark Red': {'fg':'#aa0000', 'bg':'#000000'},
 	'Light Red': {'fg': '#880000', 'bg': '#dddddd'}
 }
-THEME = 'Light Red'				#By default, light theme will be set
-FONT = ('Comic Sans MS', 9)
+THEME = 'Light'				#By default, light theme will be set
+FONT = ('Comic Sans MS', 9, 'bold')
 
 Difficulties = {
 	'Easy': {'rows': 14, 'cols': 10, 'mines': 16},
@@ -162,6 +181,8 @@ Difficulties = {
 	'Hard': {'rows': 18, 'cols': 14, 'mines': 32}
 }
 DIFFICULTY = 'Medium'			#By default, Medium difficulty game will start.
+mode_variable = tk.StringVar(WINDOW)
+mode_variable.set(DIFFICULTY)
 
 #-----------
 #Calling start game for the first time to initialize everything.

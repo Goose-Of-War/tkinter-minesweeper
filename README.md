@@ -15,6 +15,7 @@ Now, why am I making this code again if I've already made it before, you ask? Th
 Umm, in a way, yes, and in a way, no. It's a bit different from the older versions in a few ways:
 - This one is waaaay more user friendly. (No, the cat didn't sleep on the keyboard. That's how readable it has become now.)
 - Using a proper dictionary with well-defined storage systems rather than a list with nested lists and sloppily written code.
+- Easier to update stuff rather just cooking up a new variable as a fix for a bug.
 
 Depending on how I perform, more will be added. Meanwhile, onto the similarities. This time again, I will be using `tkinter`, with some other libraries and packages like `random` or any other thing I think might be needed. I'll be working with a grid again. (I mean... the game itself is a grid. What'd you expect?)
 
@@ -29,19 +30,16 @@ A good recap of what's been done. Coming right up:
 - Flag system to lock buttons with potential mines underneath.
 - A second click system, which allows the player to clear mines more easily.
 - Victory/Defeat announcement system.
-
-### What's coming soon?
-Now that so much has been done, these are some things which you can expect to see:
 - Different difficulties.
 - Different themes: Some Dark and Some Light 
-- Stopwatch to note how long you take to finish.
+
+### What's coming soon?
+Nothing much, if you ask me. I think this one is more or less done. If you want something added, send me a message and I'll try adding it.
 
 #
 Well, until next time, I guess.
 
 Honk
 
-:swan:
-
-*As this project is being updated in a somewhat regular basis, there may be discrepancies in the README file and the actual project work.*
+*This project's README file needs updating. Please wait, or if you are impatient, ping me* 
 
