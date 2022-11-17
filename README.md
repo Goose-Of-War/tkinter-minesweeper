@@ -33,13 +33,6 @@ A good recap of what's been done. Coming right up:
 - Different difficulties.
 - Different themes: Some Dark and Some Light 
 
-### What's coming soon?
-Nothing much, if you ask me. I think this one is more or less done. If you want something added, send me a message and I'll try adding it.
-
-#
-Well, until next time, I guess.
-
-Honk
-
-*This project's README file needs updating. Please wait, or if you are impatient, ping me* 
+# 
+### This one's dead. No more progress ;-;
 
