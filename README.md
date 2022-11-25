@@ -34,5 +34,5 @@ A good recap of what's been done. Coming right up:
 - Different themes: Some Dark and Some Light 
 
 # 
-### This one's dead. No more progress ;-;
+_I think this one is one of the few projects which I think I have seen through till the end. Still, you can feel free to fork it and add some stuff as you want it. Until then, honk._
 
